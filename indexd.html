@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Т-Банк - Накопления</title>
+<style>
+    /* Базовые настройки и сброс */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        background-color: #000000;
+        color: #ffffff;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Контейнер приложения */
+    .app {
+        width: 100%;
+        max-width: 430px;
+        min-height: 100vh;
+        background-color: #0f1217;
+        position: relative;
+        padding-bottom: 90px; /* Отступ для нижнего меню */
+        overflow-x: hidden;
+    }
+
+    /* Шапка (Кнопка назад) */
+    .header {
+        padding: max(16px, env(safe-area-inset-top)) 20px 10px;
+        display: flex;
+        align-items: center;
+    }
+
+    .back-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Блок с балансом */
+    .account-section {
+        padding: 10px 24px 0;
+    }
+
+    .account-name {
+        font-size: 22px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+    }
+
+    .edit-btn {
+        background-color: #2b313a;
+        border: none;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .edit-btn svg {
+        width: 14px;
+        height: 14px;
+        fill: #a0a5ad;
+    }
+
+    .balance {
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-top: 12px;
+        white-space: nowrap;
+    }
+
+    .rate {
+        color: #8b929c;
+        font-size: 17px;
+        margin-top: 8px;
+        font-weight: 500;
+    }
+
+    /* Кнопки действий (Пополнить / Перевести) */
+    .action-buttons {
+        margin: 24px;
+        background-color: #1b1f26;
+        border-radius: 28px;
+        display: flex;
+        padding: 20px 10px;
+    }
+
+    .action-btn {
+        flex: 1;
+        background: none;
+        border: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        color: #4c8eff;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.3;
+        text-align: center;
+    }
+
+    .icon-circle {
+        width: 50px;
+        height: 50px;
+        background-color: #4c8eff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0f1217;
+    }
+
+    .icon-circle svg {
+        width: 24px;
+        height: 24px;
+        fill: #0f1217;
+    }
+
+    /* Сетка карточек */
+    .cards-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 0 24px;
+    }
+
+    .info-card {
+        background-color: #1b1f26;
+        border-radius: 24px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        cursor: pointer;
+        min-height: 190px;
+    }
+
+    .info-card h2 {
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.3;
+        margin-bottom: 12px;
+    }
+
+    .info-card p {
+        color: #8b929c;
+        font-size: 15px;
+        line-height: 1.3;
+        font-weight: 400;
+    }
+
+    .card-amount {
+        font-size: 16px;
+        font-weight: 600;
+        margin-top: 4px;
+    }
+
+    /* Прогресс-бар */
+    .progress-bar {
+        height: 6px;
+        background-color: #2b313a;
+        border-radius: 10px;
+        margin-top: auto;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #29d4ff 0%, #8df5c4 100%);
+        border-radius: 10px;
+        width: 75%;
+    }
+
+    /* Проценты на остаток */
+    .date-text {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+        margin-top: 2px;
+    }
+
+    .pill {
+        background-color: #2b313a;
+        color: #a0a5ad;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: auto;
+        align-self: flex-start;
+    }
+
+    /* Баннер Сбербанк */
+    .banner {
+        margin: 24px;
+        background-color: #e9eaec;
+        border-radius: 24px;
+        padding: 20px;
+        position: relative;
+        color: #1b1f26;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .banner-content {
+        width: 65%;
+        z-index: 1;
+    }
+
+    .banner h2 {
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1.3;
+        margin-bottom: 8px;
+    }
+
+    .banner p {
+        font-size: 14px;
+        line-height: 1.3;
+        color: #4f565e;
+    }
+
+    .close-banner {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background-color: #d1d3d6;
+        border: none;
+        border-radius: 50%;
+        width: 26px;
+        height: 26px;
+        color: #4f565e;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+    }
+
+    /* Имитация логотипа Т-Банк на баннере */
+    .t-logo {
+        position: absolute;
+        right: 10px;
+        bottom: -10px;
+        width: 90px;
+        height: 100px;
+        background-color: #ffdd2d;
+        border-radius: 12px;
+        transform: rotate(-10deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        border: 4px solid #fff;
+    }
+    
+    .t-logo span {
+        font-size: 50px;
+        font-weight: 900;
+        color: #1b1f26;
+    }
+
+    .checkmark {
+        position: absolute;
+        top: -15px;
+        left: -15px;
+        width: 40px;
+        height: 40px;
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .checkmark::after {
+        content: '';
+        width: 18px;
+        height: 10px;
+        border-left: 4px solid #30d158;
+        border-bottom: 4px solid #30d158;
+        transform: rotate(-45deg) translate(2px, -2px);
+    }
+
+    /* Автопополнение */
+    .autopay {
+        margin: 0 24px;
+        background-color: #1b1f26;
+        border-radius: 24px;
+        padding: 20px;
+    }
+    
+    .autopay h2 {
+        font-size: 20px;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .question-icon {
+        background-color: #2b313a;
+        color: #a0a5ad;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    /* Нижняя навигация */
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        max-width: 430px;
+        background-color: #161a20;
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+        border-top: 1px solid #1b1f26;
+        z-index: 10;
+    }
+
+    .nav-item {
+        flex: 1;
+        background: none;
+        border: none;
+        color: #6b7280;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        position: relative;
+        padding: 5px 0;
+    }
+
+    .nav-item svg {
+        width: 24px;
+        height: 24px;
+        fill: #6b7280;
+    }
+
+    .nav-item.active {
+        color: #4c8eff;
+    }
+
+    .nav-item.active svg {
+        fill: #4c8eff;
+    }
+
+    /* Красные уведомления */
+    .badge {
+        position: absolute;
+        top: 0;
+        right: 25%;
+        background-color: #ff3b30;
+        color: #fff;
+        font-size: 10px;
+        font-weight: bold;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        border: 2px solid #161a20;
+    }
+
+    /* Модальное окно */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 100;
+        backdrop-filter: blur(5px);
+    }
+
+    .modal.open {
+        display: flex;
+    }
+
+    .modal-box {
+        background-color: #1b1f26;
+        border-radius: 24px;
+        padding: 24px;
+        width: 100%;
+        max-width: 360px;
+    }
+
+    .modal-box h2 {
+        font-size: 20px;
+        margin-bottom: 16px;
+    }
+
+    .modal-box input {
+        width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+        border: none;
+        background-color: #0f1217;
+        color: #fff;
+        font-size: 18px;
+        margin-bottom: 16px;
+        outline: none;
+    }
+
+    .modal-box button {
+        width: 100%;
+        border: none;
+        padding: 16px;
+        border-radius: 12px;
+        background-color: #4c8eff;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        margin-top: 8px;
+        cursor: pointer;
+    }
+
+    .modal-box .secondary {
+        background-color: #2b313a;
+        color: #fff;
+    }
+
+    /* Тост (всплывающее сообщение) */
+    #toast {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background-color: #2b313a;
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 20px;
+        font-size: 14px;
+        opacity: 0;
+        transition: all 0.3s;
+        pointer-events: none;
+        z-index: 200;
+    }
+
+    #toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+</style>
+</head>
+<body>
+
+<div class="app">
+    <!-- Шапка -->
+    <div class="header">
+        <button class="back-btn" onclick="showToast('Назад')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+    </div>
+
+    <!-- Секция счета -->
+    <section class="account-section">
+        <div class="account-name">
+            НГ
+            <button class="edit-btn" onclick="editName()">
+                <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            </button>
+        </div>
+        <div class="balance" id="balance">19 291,92 ₽</div>
+        <div class="rate">Ставка 6% годовых</div>
+    </section>
+
+    <!-- Кнопки действий -->
+    <section class="action-buttons">
+        <button class="action-btn" onclick="openAction('Пополнить счет')">
+            <div class="icon-circle">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </div>
+            Пополнить<br>счет
+        </button>
+        <button class="action-btn" onclick="openAction('Оплатить или перевести')">
+            <div class="icon-circle">
+                <svg viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+            </div>
+            Оплатить<br>или перевести
+        </button>
+    </section>
+
+    <!-- Карточки -->
+    <section class="cards-grid">
+        <div class="info-card" onclick="showToast('История операций')">
+            <h2>Операции<br>по счету</h2>
+            <p>Пополнений<br>в ноябре</p>
+            <div class="card-amount">70 985 ₽</div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+
+        <div class="info-card" onclick="showToast('Начисления')">
+            <h2>Проценты<br>на остаток</h2>
+            <p>Зачислится</p>
+            <div class="date-text">18 декабря</div>
+            <div class="pill">+18,36 ₽</div>
+        </div>
+    </section>
+
+    <!-- Баннер -->
+    <section class="banner" id="promo-banner">
+        <button class="close-banner" onclick="document.getElementById('promo-banner').style.display='none'">×</button>
+        <div class="banner-content">
+            <h2>Если добавить Сбербанк в Т-Банк</h2>
+            <p>Можно следить за балансом обоих счетов в одном приложении</p>
+        </div>
+        <div class="t-logo">
+            <div class="checkmark"></div>
+            <span>T</span>
+        </div>
+    </section>
+
+    <!-- Автопополнение -->
+    <section class="autopay">
+        <h2>
+            Автопополнение
+            <div class="question-icon">?</div>
+        </h2>
+        <p style="color:#8b929c; font-size:15px; margin-top:8px;">Чтобы не пополнять вручную каждый...</p>
+    </section>
+
+    <!-- Нижнее меню -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="setActive(this)">
+            <div class="badge">1</div>
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            Главная
+        </button>
+        <button class="nav-item" onclick="setActive(this)">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            Платежи
+        </button>
+        <button class="nav-item" onclick="setActive(this)">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            Город
+        </button>
+        <button class="nav-item" onclick="setActive(this)">
+            <div class="badge">3</div>
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+            Чат
+        </button>
+        <button class="nav-item" onclick="setActive(this)">
+            <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
+            Витрина
+        </button>
+    </nav>
+</div>
+
+<!-- Модальное окно -->
+<div class="modal" id="modal">
+    <div class="modal-box">
+        <h2 id="modal-title">Пополнение</h2>
+        <input id="value" type="number" placeholder="Сумма ₽">
+        <button onclick="apply()">Подтвердить</button>
+        <button class="secondary" onclick="closeModal()">Закрыть</button>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+    let balance = 19291.92;
+    let mode = "";
+
+    function fmt(n) {
+        return n.toLocaleString("ru-RU", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }) + " ₽";
+    }
+
+    function openAction(type) {
+        mode = type;
+        document.getElementById("modal-title").textContent = type;
+        document.getElementById("value").value = "";
+        document.getElementById("modal").classList.add("open");
+    }
+
+    function closeModal() {
+        document.getElementById("modal").classList.remove("open");
+    }
+
+    function apply() {
+        let n = Number(document.getElementById("value").value);
+        if (!n || n <= 0) {
+            showToast("Введите корректную сумму");
+            return;
+        }
+        
+        if (mode.includes("Пополнить")) {
+            balance += n;
+        } else {
+            balance -= n;
+        }
+        
+        document.getElementById("balance").textContent = fmt(balance);
+        closeModal();
+        showToast("Баланс обновлён");
+    }
+
+    function editName() {
+        let n = prompt("Введите новое название счёта:", "НГ");
+        if (n && n.trim() !== "") {
+            let accountNameDiv = document.querySelector(".account-name");
+            accountNameDiv.childNodes[0].nodeValue = n + " ";
+        }
+    }
+
+    function setActive(btn) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function showToast(msg) {
+        let t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 2000);
+    }
+</script>
+
+</body>
+</html>
